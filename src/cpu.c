@@ -215,13 +215,20 @@ void cpu_write(CPU *cpu, uint16_t addr, uint8_t value) {
     bus_write(cpu->bus, addr, value);
 }
 
+uint8_t cpu_fetch(CPU *cpu, uint16_t addr) {
+    uint8_t byte = cpu_read(cpu, addr);
+    cpu->pc++;
+
+    return byte;
+}
+
 uint8_t cpu_get_flag(const CPU *cpu, Flag flag) {
-    (void)cpu; (void)flag;
-    return 0;
+    return (cpu->status & flag);
 }
 
 void cpu_set_flag(CPU *cpu, Flag flag, bool value) {
-    (void)cpu; (void)flag; (void)value;
+    if (value) cpu->status |= flag;
+    else cpu->status &= ~flag;
 }
 
 // ======================================================================================================
@@ -229,7 +236,19 @@ void cpu_set_flag(CPU *cpu, Flag flag, bool value) {
 // ======================================================================================================
 
 void cpu_clock(CPU *cpu) {
-    (void)cpu;
+    if (cpu->cycles == 0) {
+        uint8_t opcode = cpu_fetch(cpu, cpu->pc);
+        Instruction instruction = cpu->table[opcode];
+
+        cpu->cycles = instruction.cycles;
+
+        uint8_t extra_cycle1 = cpu->table[opcode].address(cpu);
+        uint8_t extra_cycle2 = cpu->table[opcode].execute(cpu);
+
+        cpu->cycles += (extra_cycle1 & extra_cycle2);
+    }
+
+    if (cpu->cycles > 0) cpu->cycles--;
 }
 
 void cpu_reset(CPU *cpu) {

@@ -218,11 +218,14 @@ typedef struct CPU {
     uint8_t cycles;                 // Cycles remaining for current instruction
 } CPU;
 
-// Core
+// Initialization
 void cpu_init_table(CPU *cpu);
 void cpu_connect_bus(CPU *cpu, Bus *bus);
+
+// Core
 uint8_t cpu_read(const CPU *cpu, uint16_t addr);
 void cpu_write(CPU *cpu, uint16_t addr, uint8_t value);
+uint8_t cpu_fetch(CPU *cpu, uint16_t addr);
 uint8_t cpu_get_flag(const CPU *cpu, Flag flag);
 void cpu_set_flag(CPU *cpu, Flag flag, bool value);
 

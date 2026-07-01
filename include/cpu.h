@@ -219,7 +219,7 @@ typedef struct CPU {
 } CPU;
 
 // Core
-void cpu_init(CPU *cpu, Bus *bus);
+void cpu_init_table(CPU *cpu);
 void cpu_connect_bus(CPU *cpu, Bus *bus);
 uint8_t cpu_read(const CPU *cpu, uint16_t addr);
 void cpu_write(CPU *cpu, uint16_t addr, uint8_t value);

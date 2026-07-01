@@ -8,7 +8,7 @@ void bus_write(Bus *bus, uint16_t addr, uint8_t value);
 // CORE
 // ======================================================================================================
 
-void cpu_init(CPU *cpu, Bus *bus) {
+void cpu_init_table(CPU *cpu) {
     // Initialize instruction table with illegal opcodes
     for (int i = 0; i < TABLE_SIZE; i++) {
         cpu->table[i] = (Instruction){"???", &cpu_imp, &cpu_xxx, 2};
@@ -215,14 +215,384 @@ void cpu_write(CPU *cpu, uint16_t addr, uint8_t value) {
     bus_write(cpu->bus, addr, value);
 }
 
+uint8_t cpu_get_flag(const CPU *cpu, Flag flag) {
+    (void)cpu; (void)flag;
+    return 0;
+}
+
+void cpu_set_flag(CPU *cpu, Flag flag, bool value) {
+    (void)cpu; (void)flag; (void)value;
+}
+
 // ======================================================================================================
 // SIGNALS
 // ======================================================================================================
+
+void cpu_clock(CPU *cpu) {
+    (void)cpu;
+}
+
+void cpu_reset(CPU *cpu) {
+    (void)cpu;
+}
+
+void cpu_irq(CPU *cpu) {
+    (void)cpu;
+}
+
+void cpu_nmi(CPU *cpu) {
+    (void)cpu;
+}
 
 // ======================================================================================================
 // ADDRESSING MODES
 // ======================================================================================================
 
+uint8_t cpu_imp(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_imm(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_zpg(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_zpx(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_zpy(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_rel(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_abs(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_abx(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_aby(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_ind(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_idx(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_idy(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
 // ======================================================================================================
 // OPCODES
 // ======================================================================================================
+
+uint8_t cpu_adc(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_and(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_asl(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_bcc(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_bcs(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_beq(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_bit(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_bmi(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_bne(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_bpl(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_brk(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_bvc(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_bvs(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_clc(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_cld(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_cli(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_clv(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_cmp(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_cpx(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_cpy(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_dec(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_dex(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_dey(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_eor(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_inc(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_inx(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_iny(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_jmp(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_jsr(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_lda(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_ldx(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_ldy(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_lsr(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_nop(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_ora(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_pha(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_php(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_pla(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_plp(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_rol(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_ror(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_rti(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_rts(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_sbc(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_sec(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_sed(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_sei(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_sta(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_stx(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_sty(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_tax(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_tay(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_tsx(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_txa(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_txs(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_tya(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}
+
+uint8_t cpu_xxx(CPU *cpu) {
+    (void)cpu;
+    return 0;
+}

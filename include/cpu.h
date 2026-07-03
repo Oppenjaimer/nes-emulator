@@ -237,6 +237,7 @@ uint16_t cpu_fetch_word(CPU *cpu);
 void cpu_fetch_value(CPU *cpu);
 uint8_t cpu_get_flag(const CPU *cpu, Flag flag);
 void cpu_set_flag(CPU *cpu, Flag flag, bool value);
+uint8_t cpu_branch_if(CPU *cpu, Flag flag, bool expected);
 
 // Signals
 void cpu_clock(CPU *cpu);   // Clock cycle

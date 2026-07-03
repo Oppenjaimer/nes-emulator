@@ -19,10 +19,15 @@ int main() {
     bus.cpu.a = 0x05;
 
     uint8_t test_rom[] = {
-        OP_ADC_IMM, 0x03,
-        OP_AND_IMM, 0x0C,
         OP_ASL_IMP,
-        OP_BRK_IMP
+        OP_BCC_REL, 0x02,
+
+        OP_ASL_IMP,
+        OP_ASL_IMP,
+
+        OP_ADC_IMM, 0xF6,
+        OP_BCC_REL, 0x02,
+        OP_AND_IMM, 0xAA,
     };
 
     for (size_t i = 0; i < sizeof(test_rom); i++) {

@@ -272,6 +272,21 @@ void cpu_set_flag(CPU *cpu, Flag flag, bool value) {
     else cpu->status &= ~flag;
 }
 
+uint8_t cpu_branch_if(CPU *cpu, Flag flag, bool expected) {
+    if (cpu_get_flag(cpu, flag) != expected) return 0;
+
+    // Add extra cycle if branch succeeds
+    cpu->cycles++;
+
+    // Add extra cycle if a page is crossed
+    if (is_page_crossed(cpu->pc, cpu->addr))
+        cpu->cycles++;
+
+    cpu->pc = cpu->addr;
+
+    return 0;
+}
+
 // ======================================================================================================
 // SIGNALS
 // ======================================================================================================
@@ -473,18 +488,15 @@ uint8_t cpu_asl(CPU *cpu) {
 }
 
 uint8_t cpu_bcc(CPU *cpu) {
-    (void)cpu;
-    return 0;
+    return cpu_branch_if(cpu, FLAG_C, false);
 }
 
 uint8_t cpu_bcs(CPU *cpu) {
-    (void)cpu;
-    return 0;
+    return cpu_branch_if(cpu, FLAG_C, true);
 }
 
 uint8_t cpu_beq(CPU *cpu) {
-    (void)cpu;
-    return 0;
+    return cpu_branch_if(cpu, FLAG_Z, true);
 }
 
 uint8_t cpu_bit(CPU *cpu) {
@@ -493,18 +505,15 @@ uint8_t cpu_bit(CPU *cpu) {
 }
 
 uint8_t cpu_bmi(CPU *cpu) {
-    (void)cpu;
-    return 0;
+    return cpu_branch_if(cpu, FLAG_N, true);
 }
 
 uint8_t cpu_bne(CPU *cpu) {
-    (void)cpu;
-    return 0;
+    return cpu_branch_if(cpu, FLAG_Z, false);
 }
 
 uint8_t cpu_bpl(CPU *cpu) {
-    (void)cpu;
-    return 0;
+    return cpu_branch_if(cpu, FLAG_N, false);
 }
 
 uint8_t cpu_brk(CPU *cpu) {
@@ -513,13 +522,11 @@ uint8_t cpu_brk(CPU *cpu) {
 }
 
 uint8_t cpu_bvc(CPU *cpu) {
-    (void)cpu;
-    return 0;
+    return cpu_branch_if(cpu, FLAG_V, false);
 }
 
 uint8_t cpu_bvs(CPU *cpu) {
-    (void)cpu;
-    return 0;
+    return cpu_branch_if(cpu, FLAG_V, true);
 }
 
 uint8_t cpu_clc(CPU *cpu) {

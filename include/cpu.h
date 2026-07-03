@@ -11,192 +11,192 @@ typedef struct Bus Bus;
 typedef struct CPU CPU;
 
 typedef enum Flag {
-    C = 1 << 0, // Carry flag
-    Z = 1 << 1, // Zero flag
-    I = 1 << 2, // Interrupt disable
-    D = 1 << 3, // Decimal mode (not implemented)
-    B = 1 << 4, // Break command
-    U = 1 << 5, // Unused
-    V = 1 << 6, // Overflow flag
-    N = 1 << 7, // Negative flag
+    FLAG_C = 1 << 0, // Carry flag
+    FLAG_Z = 1 << 1, // Zero flag
+    FLAG_I = 1 << 2, // Interrupt disable
+    FLAG_D = 1 << 3, // Decimal mode (not implemented)
+    FLAG_B = 1 << 4, // Break command
+    FLAG_U = 1 << 5, // Unused
+    FLAG_V = 1 << 6, // Overflow flag
+    FLAG_N = 1 << 7, // Negative flag
 } Flag;
 
 typedef enum Opcode {
     // ADC - Add with carry
-    ADC_IMM = 0x69, ADC_ZPG = 0x65, ADC_ZPX = 0x75, ADC_ABS = 0x6D, ADC_ABX = 0x7D,
-    ADC_ABY = 0x79, ADC_IDX = 0x61, ADC_IDY = 0x71,
+    OP_ADC_IMM = 0x69, OP_ADC_ZPG = 0x65, OP_ADC_ZPX = 0x75, OP_ADC_ABS = 0x6D, OP_ADC_ABX = 0x7D,
+    OP_ADC_ABY = 0x79, OP_ADC_IDX = 0x61, OP_ADC_IDY = 0x71,
 
     // AND - Logical AND
-    AND_IMM = 0x29, AND_ZPG = 0x25, AND_ZPX = 0x35, AND_ABS = 0x2D, AND_ABX = 0x3D,
-    AND_ABY = 0x39, AND_IDX = 0x21, AND_IDY = 0x31,
+    OP_AND_IMM = 0x29, OP_AND_ZPG = 0x25, OP_AND_ZPX = 0x35, OP_AND_ABS = 0x2D, OP_AND_ABX = 0x3D,
+    OP_AND_ABY = 0x39, OP_AND_IDX = 0x21, OP_AND_IDY = 0x31,
 
     // ASL - Arithmetic shift left
-    ASL_IMP = 0x0A, ASL_ZPG = 0x06, ASL_ZPX = 0x16, ASL_ABS = 0x0E, ASL_ABX = 0x1E,
+    OP_ASL_IMP = 0x0A, OP_ASL_ZPG = 0x06, OP_ASL_ZPX = 0x16, OP_ASL_ABS = 0x0E, OP_ASL_ABX = 0x1E,
 
     // BCC - Branch if carry clear
-    BCC_REL = 0x90,
+    OP_BCC_REL = 0x90,
 
     // BCS - Branch if carry set
-    BCS_REL = 0xB0,
+    OP_BCS_REL = 0xB0,
 
     // BEQ - Branch if zero set
-    BEQ_REL = 0xF0,
+    OP_BEQ_REL = 0xF0,
 
     // BIT - Bit test
-    BIT_ZPG = 0x24, BIT_ABS = 0x2C,
+    OP_BIT_ZPG = 0x24, OP_BIT_ABS = 0x2C,
 
     // BMI - Branch if negative set
-    BMI_REL = 0x30,
+    OP_BMI_REL = 0x30,
 
     // BNE - Branch if zero clear
-    BNE_REL = 0xD0,
+    OP_BNE_REL = 0xD0,
 
     // BPL - Branch if negative clear
-    BPL_REL = 0x10,
+    OP_BPL_REL = 0x10,
 
     // BRK - Force interrupt
-    BRK_IMP = 0x00,
+    OP_BRK_IMP = 0x00,
 
     // BVC - Branch if overflow clear
-    BVC_REL = 0x50,
+    OP_BVC_REL = 0x50,
 
     // BVS - Branch if overflow set
-    BVS_REL = 0x70,
+    OP_BVS_REL = 0x70,
 
     // CLC - Clear carry flag
-    CLC_IMP = 0x18,
+    OP_CLC_IMP = 0x18,
 
     // CLD - Clear decimal mode
-    CLD_IMP = 0xD8,
+    OP_CLD_IMP = 0xD8,
 
     // CLI - Clear interrupt disable
-    CLI_IMP = 0x58,
+    OP_CLI_IMP = 0x58,
 
     // CLV - Clear overflow flag
-    CLV_IMP = 0xB8,
+    OP_CLV_IMP = 0xB8,
 
     // CMP - Compare accumulator
-    CMP_IMM = 0xC9, CMP_ZPG = 0xC5, CMP_ZPX = 0xD5, CMP_ABS = 0xCD, CMP_ABX = 0xDD,
-    CMP_ABY = 0xD9, CMP_IDX = 0xC1, CMP_IDY = 0xD1,
+    OP_CMP_IMM = 0xC9, OP_CMP_ZPG = 0xC5, OP_CMP_ZPX = 0xD5, OP_CMP_ABS = 0xCD, OP_CMP_ABX = 0xDD,
+    OP_CMP_ABY = 0xD9, OP_CMP_IDX = 0xC1, OP_CMP_IDY = 0xD1,
 
     // CPX - Compare X register
-    CPX_IMM = 0xE0, CPX_ZPG = 0xE4, CPX_ABS = 0xEC,
+    OP_CPX_IMM = 0xE0, OP_CPX_ZPG = 0xE4, OP_CPX_ABS = 0xEC,
 
     // CPY - Compare Y register
-    CPY_IMM = 0xC0, CPY_ZPG = 0xC4, CPY_ABS = 0xCC,
+    OP_CPY_IMM = 0xC0, OP_CPY_ZPG = 0xC4, OP_CPY_ABS = 0xCC,
 
     // DEC - Decrement memory
-    DEC_ZPG = 0xC6, DEC_ZPX = 0xD6, DEC_ABS = 0xCE, DEC_ABX = 0xDE,
+    OP_DEC_ZPG = 0xC6, OP_DEC_ZPX = 0xD6, OP_DEC_ABS = 0xCE, OP_DEC_ABX = 0xDE,
 
     // DEX - Decrement X register
-    DEX_IMP = 0xCA,
+    OP_DEX_IMP = 0xCA,
 
     // DEY - Decrement Y register
-    DEY_IMP = 0x88,
+    OP_DEY_IMP = 0x88,
 
     // EOR - Exclusive OR
-    EOR_IMM = 0x49, EOR_ZPG = 0x45, EOR_ZPX = 0x55, EOR_ABS = 0x4D, EOR_ABX = 0x5D,
-    EOR_ABY = 0x59, EOR_IDX = 0x41, EOR_IDY = 0x51,
+    OP_EOR_IMM = 0x49, OP_EOR_ZPG = 0x45, OP_EOR_ZPX = 0x55, OP_EOR_ABS = 0x4D, OP_EOR_ABX = 0x5D,
+    OP_EOR_ABY = 0x59, OP_EOR_IDX = 0x41, OP_EOR_IDY = 0x51,
 
     // INC - Increment memory
-    INC_ZPG = 0xE6, INC_ZPX = 0xF6, INC_ABS = 0xEE, INC_ABX = 0xFE,
+    OP_INC_ZPG = 0xE6, OP_INC_ZPX = 0xF6, OP_INC_ABS = 0xEE, OP_INC_ABX = 0xFE,
 
     // INX - Increment X register
-    INX_IMP = 0xE8,
+    OP_INX_IMP = 0xE8,
 
     // INY - Increment Y register
-    INY_IMP = 0xC8,
+    OP_INY_IMP = 0xC8,
 
     // JMP - Jump
-    JMP_ABS = 0x4C, JMP_IND = 0x6C,
+    OP_JMP_ABS = 0x4C, OP_JMP_IND = 0x6C,
 
     // JSR - Jump to subroutine
-    JSR_ABS = 0x20,
+    OP_JSR_ABS = 0x20,
 
     // LDA - Load accumulator
-    LDA_IMM = 0xA9, LDA_ZPG = 0xA5, LDA_ZPX = 0xB5, LDA_ABS = 0xAD, LDA_ABX = 0xBD,
-    LDA_ABY = 0xB9, LDA_IDX = 0xA1, LDA_IDY = 0xB1,
+    OP_LDA_IMM = 0xA9, OP_LDA_ZPG = 0xA5, OP_LDA_ZPX = 0xB5, OP_LDA_ABS = 0xAD, OP_LDA_ABX = 0xBD,
+    OP_LDA_ABY = 0xB9, OP_LDA_IDX = 0xA1, OP_LDA_IDY = 0xB1,
 
     // LDX - Load X register
-    LDX_IMM = 0xA2, LDX_ZPG = 0xA6, LDX_ZPY = 0xB6, LDX_ABS = 0xAE, LDX_ABY = 0xBE,
+    OP_LDX_IMM = 0xA2, OP_LDX_ZPG = 0xA6, OP_LDX_ZPY = 0xB6, OP_LDX_ABS = 0xAE, OP_LDX_ABY = 0xBE,
 
     // LDY - Load Y register
-    LDY_IMM = 0xA0, LDY_ZPG = 0xA4, LDY_ZPX = 0xB4, LDY_ABS = 0xAC, LDY_ABX = 0xBC,
+    OP_LDY_IMM = 0xA0, OP_LDY_ZPG = 0xA4, OP_LDY_ZPX = 0xB4, OP_LDY_ABS = 0xAC, OP_LDY_ABX = 0xBC,
 
     // LSR - Logical shift right
-    LSR_IMP = 0x4A, LSR_ZPG = 0x46, LSR_ZPX = 0x56, LSR_ABS = 0x4E, LSR_ABX = 0x5E,
+    OP_LSR_IMP = 0x4A, OP_LSR_ZPG = 0x46, OP_LSR_ZPX = 0x56, OP_LSR_ABS = 0x4E, OP_LSR_ABX = 0x5E,
 
     // NOP - No operation
-    NOP_IMP = 0xEA,
+    OP_NOP_IMP = 0xEA,
 
     // ORA - Logical OR
-    ORA_IMM = 0x09, ORA_ZPG = 0x05, ORA_ZPX = 0x15, ORA_ABS = 0x0D, ORA_ABX = 0x1D,
-    ORA_ABY = 0x19, ORA_IDX = 0x01, ORA_IDY = 0x11,
+    OP_ORA_IMM = 0x09, OP_ORA_ZPG = 0x05, OP_ORA_ZPX = 0x15, OP_ORA_ABS = 0x0D, OP_ORA_ABX = 0x1D,
+    OP_ORA_ABY = 0x19, OP_ORA_IDX = 0x01, OP_ORA_IDY = 0x11,
 
     // PHA - Push accumulator onto stack
-    PHA_IMP = 0x48,
+    OP_PHA_IMP = 0x48,
 
     // PHP - Push processor status onto stack
-    PHP_IMP = 0x08,
+    OP_PHP_IMP = 0x08,
 
     // PLA - Pull accumulator from stack
-    PLA_IMP = 0x68,
+    OP_PLA_IMP = 0x68,
 
     // PLP - Pull processor status from stack
-    PLP_IMP = 0x28,
+    OP_PLP_IMP = 0x28,
 
     // ROL - Rotate left
-    ROL_IMP = 0x2A, ROL_ZPG = 0x26, ROL_ZPX = 0x36, ROL_ABS = 0x2E, ROL_ABX = 0x3E,
+    OP_ROL_IMP = 0x2A, OP_ROL_ZPG = 0x26, OP_ROL_ZPX = 0x36, OP_ROL_ABS = 0x2E, OP_ROL_ABX = 0x3E,
 
     // ROR - Rotate right
-    ROR_IMP = 0x6A, ROR_ZPG = 0x66, ROR_ZPX = 0x76, ROR_ABS = 0x6E, ROR_ABX = 0x7E,
+    OP_ROR_IMP = 0x6A, OP_ROR_ZPG = 0x66, OP_ROR_ZPX = 0x76, OP_ROR_ABS = 0x6E, OP_ROR_ABX = 0x7E,
 
     // RTI - Return from interrupt
-    RTI_IMP = 0x40,
+    OP_RTI_IMP = 0x40,
 
     // RTS - Return from subroutine
-    RTS_IMP = 0x60,
+    OP_RTS_IMP = 0x60,
 
     // SBC - Subtract with carry
-    SBC_IMM = 0xE9, SBC_ZPG = 0xE5, SBC_ZPX = 0xF5, SBC_ABS = 0xED, SBC_ABX = 0xFD,
-    SBC_ABY = 0xF9, SBC_IDX = 0xE1, SBC_IDY = 0xF1,
+    OP_SBC_IMM = 0xE9, OP_SBC_ZPG = 0xE5, OP_SBC_ZPX = 0xF5, OP_SBC_ABS = 0xED, OP_SBC_ABX = 0xFD,
+    OP_SBC_ABY = 0xF9, OP_SBC_IDX = 0xE1, OP_SBC_IDY = 0xF1,
 
     // SEC - Set carry flag
-    SEC_IMP = 0x38,
+    OP_SEC_IMP = 0x38,
 
     // SED - Set decimal mode
-    SED_IMP = 0xF8,
+    OP_SED_IMP = 0xF8,
 
     // SEI - Set interrupt disable
-    SEI_IMP = 0x78,
+    OP_SEI_IMP = 0x78,
 
     // STA - Store accumulator
-    STA_ZPG = 0x85, STA_ZPX = 0x95, STA_ABS = 0x8D, STA_ABX = 0x9D, STA_ABY = 0x99,
-    STA_IDX = 0x81, STA_IDY = 0x91,
+    OP_STA_ZPG = 0x85, OP_STA_ZPX = 0x95, OP_STA_ABS = 0x8D, OP_STA_ABX = 0x9D, OP_STA_ABY = 0x99,
+    OP_STA_IDX = 0x81, OP_STA_IDY = 0x91,
 
     // STX - Store X register
-    STX_ZPG = 0x86, STX_ZPY = 0x96, STX_ABS = 0x8E,
+    OP_STX_ZPG = 0x86, OP_STX_ZPY = 0x96, OP_STX_ABS = 0x8E,
 
     // STY - Store Y register
-    STY_ZPG = 0x84, STY_ZPX = 0x94, STY_ABS = 0x8C,
+    OP_STY_ZPG = 0x84, OP_STY_ZPX = 0x94, OP_STY_ABS = 0x8C,
 
     // TAX - Transfer accumulator to X
-    TAX_IMP = 0xAA,
+    OP_TAX_IMP = 0xAA,
 
     // TAY - Transfer accumulator to Y
-    TAY_IMP = 0xA8,
+    OP_TAY_IMP = 0xA8,
 
     // TSX - Transfer SP to X
-    TSX_IMP = 0xBA,
+    OP_TSX_IMP = 0xBA,
 
     // TXA - Transfer X to accumulator
-    TXA_IMP = 0x8A,
+    OP_TXA_IMP = 0x8A,
 
     // TXS - Transfer X to SP
-    TXS_IMP = 0x9A,
+    OP_TXS_IMP = 0x9A,
 
     // TYA - Transfer Y to accumulator
-    TYA_IMP = 0x98,
+    OP_TYA_IMP = 0x98,
 } Opcode;
 
 typedef struct Instruction {
@@ -234,9 +234,9 @@ void cpu_write_byte(CPU *cpu, uint16_t addr, uint8_t value);
 void cpu_write_word(CPU *cpu, uint16_t addr, uint16_t value);
 uint8_t cpu_fetch_byte(CPU *cpu);
 uint16_t cpu_fetch_word(CPU *cpu);
+void cpu_fetch_value(CPU *cpu);
 uint8_t cpu_get_flag(const CPU *cpu, Flag flag);
 void cpu_set_flag(CPU *cpu, Flag flag, bool value);
-void cpu_fetch(CPU *cpu);
 
 // Signals
 void cpu_clock(CPU *cpu);   // Clock cycle
@@ -258,7 +258,7 @@ uint8_t cpu_ind(CPU *cpu);  // Indirect
 uint8_t cpu_idx(CPU *cpu);  // (Indirect,X)
 uint8_t cpu_idy(CPU *cpu);  // (Indirect),Y
 
-// Opcodes
+// Instructions
 uint8_t cpu_adc(CPU *cpu);  // Add with carry
 uint8_t cpu_and(CPU *cpu);  // Logical AND
 uint8_t cpu_asl(CPU *cpu);  // Arithmetic shift left

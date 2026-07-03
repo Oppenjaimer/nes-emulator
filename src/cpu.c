@@ -5,6 +5,14 @@ uint8_t bus_read(const Bus *bus, uint16_t addr);
 void bus_write(Bus *bus, uint16_t addr, uint8_t value);
 
 // ======================================================================================================
+// HELPERS
+// ======================================================================================================
+
+bool is_page_crossed(uint16_t base_addr, uint16_t eff_addr) {
+    return (base_addr & 0xFF00) != (eff_addr & 0xFF00);
+}
+
+// ======================================================================================================
 // CORE
 // ======================================================================================================
 
@@ -207,19 +215,35 @@ void cpu_connect_bus(CPU *cpu, Bus *bus) {
     cpu->bus = bus;
 }
 
-uint8_t cpu_read(const CPU *cpu, uint16_t addr) {
+uint8_t cpu_read_byte(const CPU *cpu, uint16_t addr) {
     return bus_read(cpu->bus, addr);
 }
 
-void cpu_write(CPU *cpu, uint16_t addr, uint8_t value) {
+uint16_t cpu_read_word(const CPU *cpu, uint16_t addr) {
+    uint16_t low = cpu_read_byte(cpu, addr + 0);
+    uint16_t high = cpu_read_byte(cpu, addr + 1);
+    return (high << 8) | low;
+}
+
+void cpu_write_byte(CPU *cpu, uint16_t addr, uint8_t value) {
     bus_write(cpu->bus, addr, value);
 }
 
-uint8_t cpu_fetch(CPU *cpu, uint16_t addr) {
-    uint8_t byte = cpu_read(cpu, addr);
-    cpu->pc++;
+void cpu_write_word(CPU *cpu, uint16_t addr, uint16_t value) {
+    cpu_write_byte(cpu, addr + 0, value & 0x00FF);
+    cpu_write_byte(cpu, addr + 1, value >> 8);
+}
 
+uint8_t cpu_fetch_byte(CPU *cpu) {
+    uint8_t byte = cpu_read_byte(cpu, cpu->pc);
+    cpu->pc++;
     return byte;
+}
+
+uint16_t cpu_fetch_word(CPU *cpu) {
+    uint16_t low = cpu_fetch_byte(cpu);
+    uint16_t high = cpu_fetch_byte(cpu);
+    return (high << 8) | low;
 }
 
 uint8_t cpu_get_flag(const CPU *cpu, Flag flag) {
@@ -231,19 +255,25 @@ void cpu_set_flag(CPU *cpu, Flag flag, bool value) {
     else cpu->status &= ~flag;
 }
 
+void cpu_fetch(CPU *cpu) {
+    // Read from resolved address when mode is not implied
+    if (cpu->table[cpu->opcode].address != &cpu_imp)
+        cpu->fetched = cpu_read_byte(cpu, cpu->addr);
+}
+
 // ======================================================================================================
 // SIGNALS
 // ======================================================================================================
 
 void cpu_clock(CPU *cpu) {
     if (cpu->cycles == 0) {
-        uint8_t opcode = cpu_fetch(cpu, cpu->pc);
-        Instruction instruction = cpu->table[opcode];
+        cpu->opcode = cpu_fetch_byte(cpu);
+        Instruction instruction = cpu->table[cpu->opcode];
 
         cpu->cycles = instruction.cycles;
 
-        uint8_t extra_cycle1 = cpu->table[opcode].address(cpu);
-        uint8_t extra_cycle2 = cpu->table[opcode].execute(cpu);
+        uint8_t extra_cycle1 = cpu->table[cpu->opcode].address(cpu);
+        uint8_t extra_cycle2 = cpu->table[cpu->opcode].execute(cpu);
 
         cpu->cycles += (extra_cycle1 & extra_cycle2);
     }
@@ -268,63 +298,100 @@ void cpu_nmi(CPU *cpu) {
 // ======================================================================================================
 
 uint8_t cpu_imp(CPU *cpu) {
-    (void)cpu;
+    // Handle accumulator addressing mode as implied
+    cpu->fetched = cpu->a;
     return 0;
 }
 
 uint8_t cpu_imm(CPU *cpu) {
-    (void)cpu;
+    cpu->addr = cpu->pc++;
     return 0;
 }
 
 uint8_t cpu_zpg(CPU *cpu) {
-    (void)cpu;
+    cpu->addr = cpu_fetch_byte(cpu);
     return 0;
 }
 
 uint8_t cpu_zpx(CPU *cpu) {
-    (void)cpu;
+    cpu->addr = cpu_fetch_byte(cpu) + cpu->x;
+    cpu->addr &= 0x00FF;
     return 0;
 }
 
 uint8_t cpu_zpy(CPU *cpu) {
-    (void)cpu;
+    cpu->addr = cpu_fetch_byte(cpu) + cpu->y;
+    cpu->addr &= 0x00FF;
     return 0;
 }
 
 uint8_t cpu_rel(CPU *cpu) {
-    (void)cpu;
+    uint16_t rel_addr = cpu_fetch_byte(cpu);
+
+    // Handle signed relative address
+    if (rel_addr & 0x80)
+        rel_addr |= 0xFF00;
+
+    cpu->addr = cpu->pc + rel_addr;
+
+    // Extra cycles handled by branching implementation
     return 0;
 }
 
 uint8_t cpu_abs(CPU *cpu) {
-    (void)cpu;
+    cpu->addr = cpu_fetch_word(cpu);
     return 0;
 }
 
 uint8_t cpu_abx(CPU *cpu) {
-    (void)cpu;
-    return 0;
+    uint16_t base_addr = cpu_fetch_word(cpu);
+    cpu->addr = base_addr + cpu->x;
+    return is_page_crossed(base_addr, cpu->addr);
 }
 
 uint8_t cpu_aby(CPU *cpu) {
-    (void)cpu;
-    return 0;
+    uint16_t base_addr = cpu_fetch_word(cpu);
+    cpu->addr = base_addr + cpu->y;
+    return is_page_crossed(base_addr, cpu->addr);
 }
 
 uint8_t cpu_ind(CPU *cpu) {
-    (void)cpu;
+    uint16_t ptr_addr = cpu_fetch_word(cpu);
+
+    if ((ptr_addr & 0x00FF) == 0xFF) {
+        // Simulate 6502 page boundary bug
+        uint16_t low = cpu_read_byte(cpu, ptr_addr);
+        uint16_t high = cpu_read_byte(cpu, ptr_addr & 0xFF00);
+        cpu->addr = (high << 8) | low;
+    } else {
+        // Normal behavior
+        cpu->addr = cpu_read_word(cpu, ptr_addr);
+    }
+
     return 0;
 }
 
 uint8_t cpu_idx(CPU *cpu) {
-    (void)cpu;
+    uint16_t zpg_addr = cpu_fetch_byte(cpu) + cpu->x;
+
+    // Wrap within zero page
+    uint16_t low = cpu_read_byte(cpu, (zpg_addr + 0) & 0x00FF);
+    uint16_t high = cpu_read_byte(cpu, (zpg_addr + 1) & 0x00FF);
+
+    cpu->addr = (high << 8) | low;
     return 0;
 }
 
 uint8_t cpu_idy(CPU *cpu) {
-    (void)cpu;
-    return 0;
+    uint16_t zpg_addr = cpu_fetch_byte(cpu);
+
+    // Wrap within zero page
+    uint16_t low = cpu_read_byte(cpu, (zpg_addr + 0) & 0x00FF);
+    uint16_t high = cpu_read_byte(cpu, (zpg_addr + 1) & 0x00FF);
+    uint16_t base_addr = (high << 8) | low;
+
+    cpu->addr = base_addr + cpu->y;
+    return is_page_crossed(base_addr, cpu->addr);
 }
 
 // ======================================================================================================

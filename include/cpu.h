@@ -209,12 +209,17 @@ typedef struct Instruction {
 typedef struct CPU {
     Instruction table[TABLE_SIZE];  // Instruction table (bottom nibble = column, top nibble = row)
     Bus *bus;                       // Devices bus
+
     uint16_t pc;                    // Program counter
     uint8_t sp;                     // Stack pointer
     uint8_t a;                      // Accumulator
     uint8_t x;                      // Index register X
     uint8_t y;                      // Index register Y
     uint8_t status;                 // Processor status flags
+
+    uint16_t addr;                  // Absolute address resulting from addressing mode
+    uint8_t opcode;                 // Currently executing opcode
+    uint8_t fetched;                // Working memory value
     uint8_t cycles;                 // Cycles remaining for current instruction
 } CPU;
 
@@ -223,11 +228,15 @@ void cpu_init_table(CPU *cpu);
 void cpu_connect_bus(CPU *cpu, Bus *bus);
 
 // Core
-uint8_t cpu_read(const CPU *cpu, uint16_t addr);
-void cpu_write(CPU *cpu, uint16_t addr, uint8_t value);
-uint8_t cpu_fetch(CPU *cpu, uint16_t addr);
+uint8_t cpu_read_byte(const CPU *cpu, uint16_t addr);
+uint16_t cpu_read_word(const CPU *cpu, uint16_t addr);
+void cpu_write_byte(CPU *cpu, uint16_t addr, uint8_t value);
+void cpu_write_word(CPU *cpu, uint16_t addr, uint16_t value);
+uint8_t cpu_fetch_byte(CPU *cpu);
+uint16_t cpu_fetch_word(CPU *cpu);
 uint8_t cpu_get_flag(const CPU *cpu, Flag flag);
 void cpu_set_flag(CPU *cpu, Flag flag, bool value);
+void cpu_fetch(CPU *cpu);
 
 // Signals
 void cpu_clock(CPU *cpu);   // Clock cycle

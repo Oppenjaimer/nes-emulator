@@ -487,7 +487,6 @@ uint8_t cpu_idy(CPU *cpu) {
 uint8_t cpu_adc(CPU *cpu) {
     cpu_fetch_value(cpu);
 
-    // Use 16 bits to capture carry bit
     uint16_t result_word = (uint16_t)cpu->a + (uint16_t)cpu->fetched + (uint16_t)cpu_get_flag(cpu, FLAG_C);
     uint8_t result_byte = result_word & 0x00FF;
 
@@ -518,7 +517,6 @@ uint8_t cpu_and(CPU *cpu) {
 uint8_t cpu_asl(CPU *cpu) {
     cpu_fetch_value(cpu);
 
-    // Use 16 bits to capture carry bit
     uint16_t result_word = (uint16_t)cpu->fetched << 1;
     uint8_t result_byte = result_word & 0x00FF;
 
@@ -621,17 +619,38 @@ uint8_t cpu_clv(CPU *cpu) {
 }
 
 uint8_t cpu_cmp(CPU *cpu) {
-    (void)cpu;
-    return 0;
+    cpu_fetch_value(cpu);
+
+    int16_t result = (uint16_t)cpu->a - (uint16_t)cpu->fetched;
+
+    cpu_set_flag(cpu, FLAG_C, result >= 0);
+    cpu_set_flag(cpu, FLAG_Z, result == 0);
+    cpu_set_flag(cpu, FLAG_N, is_bit_set(result, 7));
+
+    return 1;
 }
 
 uint8_t cpu_cpx(CPU *cpu) {
-    (void)cpu;
+    cpu_fetch_value(cpu);
+
+    int16_t result = (uint16_t)cpu->x - (uint16_t)cpu->fetched;
+
+    cpu_set_flag(cpu, FLAG_C, result >= 0);
+    cpu_set_flag(cpu, FLAG_Z, result == 0);
+    cpu_set_flag(cpu, FLAG_N, is_bit_set(result, 7));
+
     return 0;
 }
 
 uint8_t cpu_cpy(CPU *cpu) {
-    (void)cpu;
+    cpu_fetch_value(cpu);
+
+    int16_t result = (uint16_t)cpu->y - (uint16_t)cpu->fetched;
+
+    cpu_set_flag(cpu, FLAG_C, result >= 0);
+    cpu_set_flag(cpu, FLAG_Z, result == 0);
+    cpu_set_flag(cpu, FLAG_N, is_bit_set(result, 7));
+
     return 0;
 }
 

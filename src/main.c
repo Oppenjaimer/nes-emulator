@@ -24,14 +24,15 @@ int main() {
     cpu_reset(&bus.cpu);
 
     // Set test initial values
-    bus_write(&bus, 0xAABC, 0x93);
-    bus.cpu.a = 0x01;
-    cpu_set_flag(&bus.cpu, FLAG_Z, true);
-    cpu_set_flag(&bus.cpu, FLAG_V, true);
+    bus.cpu.a = 0x50;
+    bus.cpu.x = 0x50;
+    bus.cpu.y = 0x50;
 
     // Test program
     uint8_t test_rom[] = {
-        OP_BIT_ABS, 0xBC, 0xAA
+        OP_CMP_IMM, 0x50,
+        OP_CPX_IMM, 0x60,
+        OP_CPY_IMM, 0x30
     };
 
     // Load test program
@@ -40,16 +41,16 @@ int main() {
     }
 
     // Run CPU cycles
-    int cycles = 4;
+    int cycles = 6;
     for (int i = 0; i < RESET_CYCLES + cycles; i++) {
         cpu_clock(&bus.cpu);
         if (bus.cpu.cycles == 0) print_cpu_state(&bus.cpu);
     }
 
     // Check test results
+    assert(cpu_get_flag(&bus.cpu, FLAG_C));
     assert(!cpu_get_flag(&bus.cpu, FLAG_Z));
-    assert(!cpu_get_flag(&bus.cpu, FLAG_V));
-    assert(cpu_get_flag(&bus.cpu, FLAG_N));
+    assert(!cpu_get_flag(&bus.cpu, FLAG_N));
 
     return 0;
 }

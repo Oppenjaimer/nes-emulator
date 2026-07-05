@@ -572,7 +572,19 @@ uint8_t cpu_bpl(CPU *cpu) {
 }
 
 uint8_t cpu_brk(CPU *cpu) {
-    (void)cpu;
+    // BRK skips the next byte
+    cpu->pc++;
+
+    cpu_set_flag(cpu, FLAG_B, true);
+
+    cpu_stack_push_word(cpu, cpu->pc);
+    cpu_stack_push_byte(cpu, cpu->status);
+
+    cpu_set_flag(cpu, FLAG_B, false);
+    cpu_set_flag(cpu, FLAG_I, true);
+
+    cpu->pc = cpu_read_word(cpu, INTER_VECTOR);
+
     return 0;
 }
 
@@ -585,22 +597,26 @@ uint8_t cpu_bvs(CPU *cpu) {
 }
 
 uint8_t cpu_clc(CPU *cpu) {
-    (void)cpu;
+    cpu_set_flag(cpu, FLAG_C, false);
+
     return 0;
 }
 
 uint8_t cpu_cld(CPU *cpu) {
-    (void)cpu;
+    cpu_set_flag(cpu, FLAG_D, false);
+
     return 0;
 }
 
 uint8_t cpu_cli(CPU *cpu) {
-    (void)cpu;
+    cpu_set_flag(cpu, FLAG_I, false);
+
     return 0;
 }
 
 uint8_t cpu_clv(CPU *cpu) {
-    (void)cpu;
+    cpu_set_flag(cpu, FLAG_V, false);
+
     return 0;
 }
 

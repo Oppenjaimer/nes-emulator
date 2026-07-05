@@ -288,6 +288,24 @@ uint8_t cpu_branch_if(CPU *cpu, Flag flag, bool expected) {
 }
 
 // ======================================================================================================
+// STACK
+// ======================================================================================================
+
+uint16_t cpu_get_stack_address(const CPU *cpu) {
+    return STACK_BASE | cpu->sp;
+}
+
+void cpu_stack_push_byte(CPU *cpu, uint8_t value) {
+    cpu_write_byte(cpu, cpu_get_stack_address(cpu), value);
+    cpu->sp--;
+}
+
+void cpu_stack_push_word(CPU *cpu, uint16_t value) {
+    cpu_stack_push_byte(cpu, value >> 8);
+    cpu_stack_push_byte(cpu, value & 0x00FF);
+}
+
+// ======================================================================================================
 // SIGNALS
 // ======================================================================================================
 
@@ -308,15 +326,47 @@ void cpu_clock(CPU *cpu) {
 }
 
 void cpu_reset(CPU *cpu) {
-    (void)cpu;
+    cpu->pc      = cpu_read_word(cpu, RESET_VECTOR);
+    cpu->sp      = RESET_SP;
+    cpu->a       = RESET_REG;
+    cpu->x       = RESET_REG;
+    cpu->y       = RESET_REG;
+    cpu->status  = RESET_STATUS;
+
+    cpu->addr    = 0x0000;
+    cpu->opcode  = 0x00;
+    cpu->fetched = 0x00;
+    cpu->cycles  = RESET_CYCLES;
 }
 
 void cpu_irq(CPU *cpu) {
-    (void)cpu;
+    if (cpu_get_flag(cpu, FLAG_I)) return;
+
+    // Clear break flag to distinguish hardware IRQs from software BRKs
+    cpu_set_flag(cpu, FLAG_B, false);
+
+    cpu_stack_push_word(cpu, cpu->pc);
+    cpu_stack_push_byte(cpu, cpu->status);
+
+    // Disable interrupts while IRQ is running
+    cpu_set_flag(cpu, FLAG_I, true);
+
+    cpu->pc = cpu_read_word(cpu, INTER_VECTOR);
+    cpu->cycles = 7;
 }
 
 void cpu_nmi(CPU *cpu) {
-    (void)cpu;
+    // No NMI/BRK distinction strictly needed, but break flag still needs to be cleared
+    cpu_set_flag(cpu, FLAG_B, false);
+
+    cpu_stack_push_word(cpu, cpu->pc);
+    cpu_stack_push_byte(cpu, cpu->status);
+
+    // Disable interrupts while NMI is running
+    cpu_set_flag(cpu, FLAG_I, true);
+
+    cpu->pc = cpu_read_word(cpu, NMI_VECTOR);
+    cpu->cycles = 8;
 }
 
 // ======================================================================================================
@@ -500,7 +550,12 @@ uint8_t cpu_beq(CPU *cpu) {
 }
 
 uint8_t cpu_bit(CPU *cpu) {
-    (void)cpu;
+    cpu_fetch_value(cpu);
+
+    cpu_set_flag(cpu, FLAG_Z, (cpu->a & cpu->fetched) == 0x00);
+    cpu_set_flag(cpu, FLAG_V, is_bit_set(cpu->fetched, 6));
+    cpu_set_flag(cpu, FLAG_N, is_bit_set(cpu->fetched, 7));
+
     return 0;
 }
 

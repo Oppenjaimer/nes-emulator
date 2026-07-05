@@ -4,7 +4,15 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define TABLE_SIZE 256  // Instruction table size (16x16)
+#define TABLE_SIZE      256     // Instruction table size (16x16)
+#define STACK_BASE      0x0100  // Stack base address
+#define INTER_VECTOR    0XFFFE  // Pointer to PC after IRQ/BRK
+#define NMI_VECTOR      0xFFFA  // Pointer to PC after NMI
+#define RESET_VECTOR    0xFFFC  // Pointer to PC on reset
+#define RESET_SP        0xFD    // Initial SP
+#define RESET_REG       0x00    // Initial register value
+#define RESET_STATUS    0x20    // Initial flags (set U)
+#define RESET_CYCLES    7       // Reset sequence cycles
 
 // Forward declarations
 typedef struct Bus Bus;
@@ -238,6 +246,11 @@ void cpu_fetch_value(CPU *cpu);
 uint8_t cpu_get_flag(const CPU *cpu, Flag flag);
 void cpu_set_flag(CPU *cpu, Flag flag, bool value);
 uint8_t cpu_branch_if(CPU *cpu, Flag flag, bool expected);
+
+// Stack
+uint16_t cpu_get_stack_address(const CPU *cpu);
+void cpu_stack_push_byte(CPU *cpu, uint8_t value);
+void cpu_stack_push_word(CPU *cpu, uint16_t value);
 
 // Signals
 void cpu_clock(CPU *cpu);   // Clock cycle

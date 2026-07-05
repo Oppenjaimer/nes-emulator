@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdio.h>
 
 #include "bus.h"
@@ -9,39 +10,46 @@ void print_cpu_state(const CPU *cpu) {
 }
 
 int main() {
+    // Initialize bus
     Bus bus = {0};
-
     bus_init(&bus);
-    cpu_init_table(&bus.cpu);
 
+    // Write starting address to reset vector
     uint16_t start_addr = 0x8000;
-    bus.cpu.pc = start_addr;
-    bus.cpu.a = 0x05;
+    bus_write(&bus, RESET_VECTOR + 0, start_addr & 0x00FF);
+    bus_write(&bus, RESET_VECTOR + 1, start_addr >> 8);
 
+    // Initialize CPU
+    cpu_init_table(&bus.cpu);
+    cpu_reset(&bus.cpu);
+
+    // Set test initial values
+    bus_write(&bus, 0xAABC, 0x93);
+    bus.cpu.a = 0x01;
+    cpu_set_flag(&bus.cpu, FLAG_Z, true);
+    cpu_set_flag(&bus.cpu, FLAG_V, true);
+
+    // Test program
     uint8_t test_rom[] = {
-        OP_ASL_IMP,
-        OP_BCC_REL, 0x02,
-
-        OP_ASL_IMP,
-        OP_ASL_IMP,
-
-        OP_ADC_IMM, 0xF6,
-        OP_BCC_REL, 0x02,
-        OP_AND_IMM, 0xAA,
+        OP_BIT_ABS, 0xBC, 0xAA
     };
 
+    // Load test program
     for (size_t i = 0; i < sizeof(test_rom); i++) {
         bus_write(&bus, start_addr + i, test_rom[i]);
     }
 
-    printf("--- Initial State ---\n");
-    print_cpu_state(&bus.cpu);
-    printf("\n--- Starting Execution ---\n");
-
-    for (int i = 0; i < 15; i++) {
+    // Run CPU cycles
+    int cycles = 4;
+    for (int i = 0; i < RESET_CYCLES + cycles; i++) {
         cpu_clock(&bus.cpu);
         if (bus.cpu.cycles == 0) print_cpu_state(&bus.cpu);
     }
+
+    // Check test results
+    assert(!cpu_get_flag(&bus.cpu, FLAG_Z));
+    assert(!cpu_get_flag(&bus.cpu, FLAG_V));
+    assert(cpu_get_flag(&bus.cpu, FLAG_N));
 
     return 0;
 }

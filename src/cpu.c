@@ -728,28 +728,50 @@ uint8_t cpu_iny(CPU *cpu) {
 }
 
 uint8_t cpu_jmp(CPU *cpu) {
-    (void)cpu;
+    cpu->pc = cpu->addr;
+
     return 0;
 }
 
 uint8_t cpu_jsr(CPU *cpu) {
-    (void)cpu;
+    cpu_stack_push_word(cpu, cpu->pc - 1);
+
+    cpu->pc = cpu->addr;
+
     return 0;
 }
 
 uint8_t cpu_lda(CPU *cpu) {
-    (void)cpu;
-    return 0;
+    cpu_fetch_value(cpu);
+
+    cpu->a = cpu->fetched;
+
+    cpu_set_flag(cpu, FLAG_Z, cpu->a == 0x00);
+    cpu_set_flag(cpu, FLAG_N, is_bit_set(cpu->a, 7));
+
+    return 1;
 }
 
 uint8_t cpu_ldx(CPU *cpu) {
-    (void)cpu;
-    return 0;
+    cpu_fetch_value(cpu);
+
+    cpu->x = cpu->fetched;
+
+    cpu_set_flag(cpu, FLAG_Z, cpu->x == 0x00);
+    cpu_set_flag(cpu, FLAG_N, is_bit_set(cpu->x, 7));
+
+    return 1;
 }
 
 uint8_t cpu_ldy(CPU *cpu) {
-    (void)cpu;
-    return 0;
+    cpu_fetch_value(cpu);
+
+    cpu->y = cpu->fetched;
+
+    cpu_set_flag(cpu, FLAG_Z, cpu->y == 0x00);
+    cpu_set_flag(cpu, FLAG_N, is_bit_set(cpu->y, 7));
+
+    return 1;
 }
 
 uint8_t cpu_lsr(CPU *cpu) {

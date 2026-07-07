@@ -775,18 +775,39 @@ uint8_t cpu_ldy(CPU *cpu) {
 }
 
 uint8_t cpu_lsr(CPU *cpu) {
-    (void)cpu;
+    cpu_fetch_value(cpu);
+
+    uint16_t result = cpu->fetched >> 1;
+
+    cpu_set_flag(cpu, FLAG_C, is_bit_set(cpu->fetched, 0));
+    cpu_set_flag(cpu, FLAG_Z, result == 0x00);
+    cpu_set_flag(cpu, FLAG_N, false); // Bit 7 always clear after logical shift
+
+    if (cpu->table[cpu->opcode].address == &cpu_imp) {
+        // Accumulator addressing mode
+        cpu->a = result;
+    } else {
+        // Other addressing modes
+        cpu_write_byte(cpu, cpu->addr, result);
+    }
+
     return 0;
 }
 
 uint8_t cpu_nop(CPU *cpu) {
-    (void)cpu;
+    (void)cpu; // Do nothing
     return 0;
 }
 
 uint8_t cpu_ora(CPU *cpu) {
-    (void)cpu;
-    return 0;
+    cpu_fetch_value(cpu);
+
+    cpu->a |= cpu->fetched;
+
+    cpu_set_flag(cpu, FLAG_Z, cpu->a == 0x00);
+    cpu_set_flag(cpu, FLAG_N, is_bit_set(cpu->a, 7));
+
+    return 1;
 }
 
 uint8_t cpu_pha(CPU *cpu) {

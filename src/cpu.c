@@ -263,8 +263,8 @@ void cpu_fetch_value(CPU *cpu) {
         cpu->fetched = cpu_read_byte(cpu, cpu->addr);
 }
 
-uint8_t cpu_get_flag(const CPU *cpu, Flag flag) {
-    return (cpu->status & flag);
+bool cpu_get_flag(const CPU *cpu, Flag flag) {
+    return (cpu->status & flag) > 0;
 }
 
 void cpu_set_flag(CPU *cpu, Flag flag, bool value) {
@@ -787,7 +787,7 @@ uint8_t cpu_ldy(CPU *cpu) {
 uint8_t cpu_lsr(CPU *cpu) {
     cpu_fetch_value(cpu);
 
-    uint16_t result = cpu->fetched >> 1;
+    uint8_t result = cpu->fetched >> 1;
 
     cpu_set_flag(cpu, FLAG_C, is_bit_set(cpu->fetched, 0));
     cpu_set_flag(cpu, FLAG_Z, result == 0x00);
@@ -845,28 +845,68 @@ uint8_t cpu_pla(CPU *cpu) {
 uint8_t cpu_plp(CPU *cpu) {
     cpu->status = cpu_stack_pop_byte(cpu);
 
+    cpu_set_flag(cpu, FLAG_B, false);
     cpu_set_flag(cpu, FLAG_U, true);
 
     return 0;
 }
 
 uint8_t cpu_rol(CPU *cpu) {
-    (void)cpu;
+    cpu_fetch_value(cpu);
+
+    uint16_t result_word = (uint16_t)cpu->fetched << 1;
+    result_word |= cpu_get_flag(cpu, FLAG_C);
+    uint8_t result_byte = result_word & 0x00FF;
+
+    cpu_set_flag(cpu, FLAG_C, result_word & 0xFF00);
+    cpu_set_flag(cpu, FLAG_Z, result_byte == 0x00);
+    cpu_set_flag(cpu, FLAG_N, is_bit_set(result_byte, 7));
+
+    if (cpu->table[cpu->opcode].address == &cpu_imp) {
+        // Accumulator addressing mode
+        cpu->a = result_byte;
+    } else {
+        // Other addressing modes
+        cpu_write_byte(cpu, cpu->addr, result_byte);
+    }
+
     return 0;
 }
 
 uint8_t cpu_ror(CPU *cpu) {
-    (void)cpu;
+    cpu_fetch_value(cpu);
+
+    uint8_t result = cpu->fetched >> 1;
+    result |= cpu_get_flag(cpu, FLAG_C) << 7;
+
+    cpu_set_flag(cpu, FLAG_C, is_bit_set(cpu->fetched, 0));
+    cpu_set_flag(cpu, FLAG_Z, result == 0x00);
+    cpu_set_flag(cpu, FLAG_N, is_bit_set(result, 7));
+
+    if (cpu->table[cpu->opcode].address == &cpu_imp) {
+        // Accumulator addressing mode
+        cpu->a = result;
+    } else {
+        // Other addressing modes
+        cpu_write_byte(cpu, cpu->addr, result);
+    }
+
     return 0;
 }
 
 uint8_t cpu_rti(CPU *cpu) {
-    (void)cpu;
+    cpu->status = cpu_stack_pop_byte(cpu);
+    cpu->pc = cpu_stack_pop_word(cpu);
+
+    cpu_set_flag(cpu, FLAG_B, false);
+    cpu_set_flag(cpu, FLAG_U, true);
+
     return 0;
 }
 
 uint8_t cpu_rts(CPU *cpu) {
-    (void)cpu;
+    cpu->pc = cpu_stack_pop_word(cpu) + 1;
+
     return 0;
 }
 

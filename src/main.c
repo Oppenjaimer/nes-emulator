@@ -24,34 +24,38 @@ int main() {
     cpu_reset(&bus.cpu);
 
     // Set test initial values
-    bus.cpu.a = 0x01;
+    uint8_t initial_sp = bus.cpu.sp;
+    bus.cpu.a = 0x00;
 
-    // Test program
     uint8_t test_rom[] = {
-        OP_PHA_IMP, OP_PLP_IMP
+        OP_JSR_ABS, 0x10, 0x80,
+        OP_NOP_IMP
     };
 
-    // Load test program
+    uint8_t subroutine_rom[] = {
+        OP_LDA_IMM, 0x42,
+        OP_RTS_IMP
+    };
+
+    // Load programs into memory
     for (size_t i = 0; i < sizeof(test_rom); i++) {
         bus_write(&bus, start_addr + i, test_rom[i]);
     }
+    for (size_t i = 0; i < sizeof(subroutine_rom); i++) {
+        bus_write(&bus, 0x8010 + i, subroutine_rom[i]);
+    }
 
     // Run CPU cycles
-    int cycles = 7;
+    int cycles = 16;
     for (int i = 0; i < RESET_CYCLES + cycles; i++) {
         cpu_clock(&bus.cpu);
         if (bus.cpu.cycles == 0) print_cpu_state(&bus.cpu);
     }
 
     // Check test results
-    assert(cpu_get_flag(&bus.cpu, FLAG_C));
-    assert(!cpu_get_flag(&bus.cpu, FLAG_Z));
-    assert(!cpu_get_flag(&bus.cpu, FLAG_I));
-    assert(!cpu_get_flag(&bus.cpu, FLAG_D));
-    assert(!cpu_get_flag(&bus.cpu, FLAG_B));
-    assert(cpu_get_flag(&bus.cpu, FLAG_U));
-    assert(!cpu_get_flag(&bus.cpu, FLAG_V));
-    assert(!cpu_get_flag(&bus.cpu, FLAG_N));
+    assert(bus.cpu.pc == 0x8004);
+    assert(bus.cpu.a == 0x42);
+    assert(bus.cpu.sp == initial_sp);
     assert(bus.cpu.cycles == 0);
 
     return 0;

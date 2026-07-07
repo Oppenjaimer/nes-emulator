@@ -949,51 +949,75 @@ uint8_t cpu_sei(CPU *cpu) {
 }
 
 uint8_t cpu_sta(CPU *cpu) {
-    (void)cpu;
+    cpu_write_byte(cpu, cpu->addr, cpu->a);
+
     return 0;
 }
 
 uint8_t cpu_stx(CPU *cpu) {
-    (void)cpu;
+    cpu_write_byte(cpu, cpu->addr, cpu->x);
+
     return 0;
 }
 
 uint8_t cpu_sty(CPU *cpu) {
-    (void)cpu;
+    cpu_write_byte(cpu, cpu->addr, cpu->y);
+
     return 0;
 }
 
 uint8_t cpu_tax(CPU *cpu) {
-    (void)cpu;
+    cpu->x = cpu->a;
+
+    cpu_set_flag(cpu, FLAG_Z, cpu->x == 0x00);
+    cpu_set_flag(cpu, FLAG_N, is_bit_set(cpu->x, 7));
+
     return 0;
 }
 
 uint8_t cpu_tay(CPU *cpu) {
-    (void)cpu;
+    cpu->y = cpu->a;
+
+    cpu_set_flag(cpu, FLAG_Z, cpu->y == 0x00);
+    cpu_set_flag(cpu, FLAG_N, is_bit_set(cpu->y, 7));
+
     return 0;
 }
 
 uint8_t cpu_tsx(CPU *cpu) {
-    (void)cpu;
+    cpu->x = cpu->sp;
+
+    cpu_set_flag(cpu, FLAG_Z, cpu->x == 0x00);
+    cpu_set_flag(cpu, FLAG_N, is_bit_set(cpu->x, 7));
+
     return 0;
 }
 
 uint8_t cpu_txa(CPU *cpu) {
-    (void)cpu;
+    cpu->a = cpu->x;
+
+    cpu_set_flag(cpu, FLAG_Z, cpu->a == 0x00);
+    cpu_set_flag(cpu, FLAG_N, is_bit_set(cpu->a, 7));
+
     return 0;
 }
 
 uint8_t cpu_txs(CPU *cpu) {
-    (void)cpu;
+    cpu->sp = cpu->x;
+
     return 0;
 }
 
 uint8_t cpu_tya(CPU *cpu) {
-    (void)cpu;
+    cpu->a = cpu->y;
+
+    cpu_set_flag(cpu, FLAG_Z, cpu->a == 0x00);
+    cpu_set_flag(cpu, FLAG_N, is_bit_set(cpu->a, 7));
+
     return 0;
 }
 
 uint8_t cpu_xxx(CPU *cpu) {
-    (void)cpu;
+    (void)cpu; // Do nothing
     return 0;
 }

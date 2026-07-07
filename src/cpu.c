@@ -911,22 +911,40 @@ uint8_t cpu_rts(CPU *cpu) {
 }
 
 uint8_t cpu_sbc(CPU *cpu) {
-    (void)cpu;
-    return 0;
+    cpu_fetch_value(cpu);
+
+    uint16_t fetched = (uint16_t)cpu->fetched ^ 0x00FF;
+    uint16_t result_word = (uint16_t)cpu->a + fetched + (uint16_t)cpu_get_flag(cpu, FLAG_C);
+    uint8_t result_byte = result_word & 0x00FF;
+
+    bool same_add_msb = (get_bit(cpu->a, 7) ^ get_bit(fetched, 7)) == 0;
+    bool diff_acc_msb = get_bit(cpu->a, 7) != get_bit(result_byte, 7);
+
+    cpu->a = result_byte;
+
+    cpu_set_flag(cpu, FLAG_C, result_word & 0xFF00);
+    cpu_set_flag(cpu, FLAG_Z, result_byte == 0x00);
+    cpu_set_flag(cpu, FLAG_V, same_add_msb && diff_acc_msb);
+    cpu_set_flag(cpu, FLAG_N, is_bit_set(result_byte, 7));
+
+    return 1;
 }
 
 uint8_t cpu_sec(CPU *cpu) {
-    (void)cpu;
+    cpu_set_flag(cpu, FLAG_C, true);
+
     return 0;
 }
 
 uint8_t cpu_sed(CPU *cpu) {
-    (void)cpu;
+    cpu_set_flag(cpu, FLAG_D, true);
+
     return 0;
 }
 
 uint8_t cpu_sei(CPU *cpu) {
-    (void)cpu;
+    cpu_set_flag(cpu, FLAG_I, true);
+
     return 0;
 }
 

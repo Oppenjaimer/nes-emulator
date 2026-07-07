@@ -291,18 +291,31 @@ uint8_t cpu_branch_if(CPU *cpu, Flag flag, bool expected) {
 // STACK
 // ======================================================================================================
 
-uint16_t cpu_get_stack_address(const CPU *cpu) {
+uint16_t cpu_stack_get_address(const CPU *cpu) {
     return STACK_BASE | cpu->sp;
 }
 
 void cpu_stack_push_byte(CPU *cpu, uint8_t value) {
-    cpu_write_byte(cpu, cpu_get_stack_address(cpu), value);
+    cpu_write_byte(cpu, cpu_stack_get_address(cpu), value);
     cpu->sp--;
 }
 
 void cpu_stack_push_word(CPU *cpu, uint16_t value) {
     cpu_stack_push_byte(cpu, value >> 8);
     cpu_stack_push_byte(cpu, value & 0x00FF);
+}
+
+uint8_t cpu_stack_pop_byte(CPU *cpu) {
+    cpu->sp++;
+
+    return cpu_read_byte(cpu, cpu_stack_get_address(cpu));
+}
+
+uint16_t cpu_stack_pop_word(CPU *cpu) {
+    uint8_t low = cpu_stack_pop_byte(cpu);
+    uint8_t high = cpu_stack_pop_byte(cpu);
+
+    return (high << 8) | low;
 }
 
 // ======================================================================================================
@@ -573,12 +586,9 @@ uint8_t cpu_brk(CPU *cpu) {
     // BRK skips the next byte
     cpu->pc++;
 
-    cpu_set_flag(cpu, FLAG_B, true);
-
     cpu_stack_push_word(cpu, cpu->pc);
-    cpu_stack_push_byte(cpu, cpu->status);
+    cpu_stack_push_byte(cpu, cpu->status | FLAG_B);
 
-    cpu_set_flag(cpu, FLAG_B, false);
     cpu_set_flag(cpu, FLAG_I, true);
 
     cpu->pc = cpu_read_word(cpu, INTER_VECTOR);
@@ -811,22 +821,32 @@ uint8_t cpu_ora(CPU *cpu) {
 }
 
 uint8_t cpu_pha(CPU *cpu) {
-    (void)cpu;
+    cpu_stack_push_byte(cpu, cpu->a);
+
     return 0;
 }
 
 uint8_t cpu_php(CPU *cpu) {
-    (void)cpu;
+    // Set break flag before push
+    cpu_stack_push_byte(cpu, cpu->status | FLAG_B);
+
     return 0;
 }
 
 uint8_t cpu_pla(CPU *cpu) {
-    (void)cpu;
+    cpu->a = cpu_stack_pop_byte(cpu);
+
+    cpu_set_flag(cpu, FLAG_Z, cpu->a == 0x00);
+    cpu_set_flag(cpu, FLAG_N, is_bit_set(cpu->a, 7));
+
     return 0;
 }
 
 uint8_t cpu_plp(CPU *cpu) {
-    (void)cpu;
+    cpu->status = cpu_stack_pop_byte(cpu);
+
+    cpu_set_flag(cpu, FLAG_U, true);
+
     return 0;
 }
 

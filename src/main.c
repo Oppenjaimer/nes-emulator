@@ -24,11 +24,11 @@ int main() {
     cpu_reset(&bus.cpu);
 
     // Set test initial values
-    bus.cpu.a = 0x09;
+    bus.cpu.a = 0x01;
 
     // Test program
     uint8_t test_rom[] = {
-        OP_LSR_IMP
+        OP_PHA_IMP, OP_PLP_IMP
     };
 
     // Load test program
@@ -37,7 +37,7 @@ int main() {
     }
 
     // Run CPU cycles
-    int cycles = 2;
+    int cycles = 7;
     for (int i = 0; i < RESET_CYCLES + cycles; i++) {
         cpu_clock(&bus.cpu);
         if (bus.cpu.cycles == 0) print_cpu_state(&bus.cpu);
@@ -46,6 +46,11 @@ int main() {
     // Check test results
     assert(cpu_get_flag(&bus.cpu, FLAG_C));
     assert(!cpu_get_flag(&bus.cpu, FLAG_Z));
+    assert(!cpu_get_flag(&bus.cpu, FLAG_I));
+    assert(!cpu_get_flag(&bus.cpu, FLAG_D));
+    assert(!cpu_get_flag(&bus.cpu, FLAG_B));
+    assert(cpu_get_flag(&bus.cpu, FLAG_U));
+    assert(!cpu_get_flag(&bus.cpu, FLAG_V));
     assert(!cpu_get_flag(&bus.cpu, FLAG_N));
     assert(bus.cpu.cycles == 0);
 

@@ -147,10 +147,10 @@ typedef enum Opcode {
     // PHP - Push processor status onto stack
     OP_PHP_IMP = 0x08,
 
-    // PLA - Pull accumulator from stack
+    // PLA - Pop accumulator off stack
     OP_PLA_IMP = 0x68,
 
-    // PLP - Pull processor status from stack
+    // PLP - Pop processor status off stack
     OP_PLP_IMP = 0x28,
 
     // ROL - Rotate left
@@ -248,9 +248,11 @@ void cpu_set_flag(CPU *cpu, Flag flag, bool value);
 uint8_t cpu_branch_if(CPU *cpu, Flag flag, bool expected);
 
 // Stack
-uint16_t cpu_get_stack_address(const CPU *cpu);
+uint16_t cpu_stack_get_address(const CPU *cpu);
 void cpu_stack_push_byte(CPU *cpu, uint8_t value);
 void cpu_stack_push_word(CPU *cpu, uint16_t value);
+uint8_t cpu_stack_pop_byte(CPU *cpu);
+uint16_t cpu_stack_pop_word(CPU *cpu);
 
 // Signals
 void cpu_clock(CPU *cpu);   // Clock cycle
@@ -310,8 +312,8 @@ uint8_t cpu_nop(CPU *cpu);  // No operation
 uint8_t cpu_ora(CPU *cpu);  // Logical OR
 uint8_t cpu_pha(CPU *cpu);  // Push accumulator onto stack
 uint8_t cpu_php(CPU *cpu);  // Push processor status onto stack
-uint8_t cpu_pla(CPU *cpu);  // Pull accumulator from stack
-uint8_t cpu_plp(CPU *cpu);  // Pull processor status from stack
+uint8_t cpu_pla(CPU *cpu);  // Pop accumulator off stack
+uint8_t cpu_plp(CPU *cpu);  // Pop processor status off stack
 uint8_t cpu_rol(CPU *cpu);  // Rotate left
 uint8_t cpu_ror(CPU *cpu);  // Rotate right
 uint8_t cpu_rti(CPU *cpu);  // Return from interrupt

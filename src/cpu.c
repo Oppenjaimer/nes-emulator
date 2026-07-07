@@ -655,17 +655,33 @@ uint8_t cpu_cpy(CPU *cpu) {
 }
 
 uint8_t cpu_dec(CPU *cpu) {
-    (void)cpu;
+    cpu_fetch_value(cpu);
+
+    uint8_t result = cpu->fetched - 1;
+
+    cpu_write_byte(cpu, cpu->addr, result);
+
+    cpu_set_flag(cpu, FLAG_Z, result == 0x00);
+    cpu_set_flag(cpu, FLAG_N, is_bit_set(result, 7));
+
     return 0;
 }
 
 uint8_t cpu_dex(CPU *cpu) {
-    (void)cpu;
+    cpu->x--;
+
+    cpu_set_flag(cpu, FLAG_Z, cpu->x == 0x00);
+    cpu_set_flag(cpu, FLAG_N, is_bit_set(cpu->x, 7));
+
     return 0;
 }
 
 uint8_t cpu_dey(CPU *cpu) {
-    (void)cpu;
+    cpu->y--;
+
+    cpu_set_flag(cpu, FLAG_Z, cpu->y == 0x00);
+    cpu_set_flag(cpu, FLAG_N, is_bit_set(cpu->y, 7));
+
     return 0;
 }
 

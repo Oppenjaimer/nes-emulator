@@ -25,11 +25,11 @@ int main() {
 
     // Set test initial values
     bus.cpu.x = 0x05;
-    bus.cpu.y = 0x01;
+    bus.cpu.y = 0xFF;
 
     // Test program
     uint8_t test_rom[] = {
-        OP_DEX_IMP, OP_DEY_IMP,
+        OP_INX_IMP, OP_INY_IMP,
     };
 
     // Load test program
